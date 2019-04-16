@@ -7,12 +7,14 @@
 //
 
 import Foundation
-
+import UIKit
 
 class QueryService {
 
     let defaultSession = URLSession(configuration: .default)
-
+    var resultPoke: Pokemon? = nil
+    var pokeImage: UIImage? = nil
+    
     func getSearchResults(searchTerm: String) {
 
         if let urlComponents = URLComponents(string: (PokemonAPI.URL.rawValue + searchTerm)) {
@@ -36,7 +38,7 @@ class QueryService {
                             let imageURL = res!["sprites"] as? [String: String]
                         {
                             let pokeResult = Pokemon(id: id, name: species["name"] as! String, imageURL: imageURL["front_default"]! , weight: weight, height: height)
-                            print(pokeResult)
+                                self.getImage(imageURL: pokeResult.imageURL)
                             }
                     }
                     catch let error {
@@ -47,7 +49,25 @@ class QueryService {
         }
     }
 
+    func getImage(imageURL: String){
+        if let urlComponents = URLComponents(string: imageURL) {
+            
+            guard let url = urlComponents.url else {return}
+            
+            URLSession.shared.dataTask(with: url) { data, response, error in
 
+                guard let data = data,
+                    error == nil,
+                    let image = UIImage(data: data) else { return }
+                self.pokeImage = image
+                
+            }.resume()
+        }
+    }
+    
+    func decodeImage() -> UIImage{
+        return pokeImage ?? UIImage()
+    }
 
 
 }

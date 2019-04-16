@@ -10,11 +10,13 @@ import UIKit
 
 class ViewController: UIViewController {
     
+    @IBOutlet weak var pokemonImage: UIImageView!
     @IBOutlet weak var searchBar: UISearchBar!
     let queryService = QueryService()
     
     @IBAction func teste(_ sender: UIButton) {
         queryService.getSearchResults(searchTerm:  "pikachu")
+        pokemonImage.image = queryService.decodeImage()
     }
     
     override func viewDidLoad() {
