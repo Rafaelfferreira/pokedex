@@ -49,21 +49,7 @@ class QueryService {
         }
     }
 
-    func getImage(imageURL: String){
-        if let urlComponents = URLComponents(string: imageURL) {
-            
-            guard let url = urlComponents.url else {return}
-            
-            URLSession.shared.dataTask(with: url) { data, response, error in
 
-                guard let data = data,
-                    error == nil,
-                    let image = UIImage(data: data) else { return }
-                self.pokeImage = image
-                
-            }.resume()
-        }
-    }
     
     func decodeImage() -> UIImage{
         return pokeImage ?? UIImage()
