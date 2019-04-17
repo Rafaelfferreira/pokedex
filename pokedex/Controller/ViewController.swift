@@ -10,49 +10,118 @@ import UIKit
 
 class ViewController: UIViewController {
     
+    // MARK: - UIView variables
+    @IBOutlet weak var blueBall: UIView!
+    @IBOutlet weak var miniBall1: UIView!
+    @IBOutlet weak var miniBall2: UIView!
+    @IBOutlet weak var bigBall: UIView!
+    @IBOutlet weak var stackBallRed: UIView!
+    @IBOutlet weak var stackBallYellow: UIView!
+    @IBOutlet weak var stackBallGreen: UIView!
+    @IBOutlet weak var screenBorder: UIView!
+    @IBOutlet weak var infoScreen: UIView!
+    
+    // MARK: - Pokemon variables
     @IBOutlet weak var pokemonImage: UIImageView!
+    @IBOutlet weak var pokemonNameLabel: UILabel!
+    @IBOutlet weak var pokemonIDLabel: UILabel!
+    @IBOutlet weak var pokemonHeightLabel: UILabel!
+    @IBOutlet weak var pokemonTypeLabel: UILabel!
+    @IBOutlet weak var pokemonWeightLabel: UILabel!
+    
+    // MARK: - System variables
     @IBOutlet weak var searchBar: UISearchBar!
     let defaultSession = URLSession(configuration: .default)
     
     override func viewDidLoad() {
         
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        
         self.searchBar.delegate = self
+        self.customizeScreen()
+    }
+    
+    private func customizeScreen(){
+        blueBall.layer.borderColor = UIColor(red: 222/255, green: 222/255, blue: 222/255, alpha: 1).cgColor
+        blueBall.layer.borderWidth = 5.0
+        blueBall.layer.cornerRadius = 19
+        blueBall.clipsToBounds = true
+        stackBallRed.layer.borderColor = UIColor.black.cgColor
+        stackBallRed.layer.borderWidth = 1
+        stackBallRed.layer.cornerRadius = 8
+        stackBallYellow.layer.borderColor = UIColor.black.cgColor
+        stackBallYellow.layer.borderWidth = 1
+        stackBallYellow.layer.cornerRadius = 8
+        stackBallGreen.layer.borderColor = UIColor.black.cgColor
+        stackBallGreen.layer.borderWidth = 1
+        stackBallGreen.layer.cornerRadius = 8
+        miniBall1.layer.cornerRadius = 5
+        miniBall2.layer.cornerRadius = 5
+        bigBall.layer.cornerRadius = 8
+        
+        screenBorder.layer.cornerRadius = 5
+        infoScreen.layer.cornerRadius = 5
+        infoScreen.layer.borderWidth = 1
+        infoScreen.layer.borderColor = UIColor.black.cgColor
+        
+        self.pokemonNameLabel.text = ""
+        self.pokemonIDLabel.text = ""
+        self.pokemonWeightLabel.text = ""
+        self.pokemonHeightLabel.text = ""
+        self.pokemonTypeLabel.text = ""
+    }
+    
+    func winkBlueBall(){
+        UIView.animate(withDuration: 0.2, delay: 0.0, options:[.repeat], animations: {
+            UIView.setAnimationRepeatCount(2)
+            self.blueBall.backgroundColor = UIColor(red: 84/255, green: 168/255, blue: 246/255, alpha: 1)
+            self.blueBall.backgroundColor = UIColor(red: 51/255, green: 104/255, blue: 154/255, alpha: 1)
+        }, completion:nil)
     }
     
     func getSearchResults(searchTerm: String) {
         
-        if let urlComponents = URLComponents(string: (PokemonAPI.URL.rawValue + searchTerm)) {
+        if let urlComponents = URLComponents(string: (PokemonAPI.URL.rawValue + searchTerm.lowercased())) {
             // 3
             guard let url = urlComponents.url else { return }
             print(url)
             // 4
             URLSession.shared.dataTask(with: url) { data, response, error in
                 if error != nil {
-                    print("ERRO")
+                    print(error ?? "erro")
                 }
-                
+                var pokeResult: Pokemon = Pokemon()
                 if let data = data {
+                    DispatchQueue.main.async {
+                        self.winkBlueBall()
+                    }
                     do {
                         let res = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                        
                         if let id = res!["id"] as? Int,
                             let species = res!["species"] as? [String: Any],
                             let height = res!["height"] as? Int,
                             let weight = res!["weight"] as? Int,
-                            let imageURL = res!["sprites"] as? [String: Any]
+                            let imageURL = res!["sprites"] as? [String: Any],
+                            let type = res!["types"] as? [Any]
                         {
-                            print(id)
-                            let pokeResult = Pokemon(id: id, name: species["name"] as! String, imageURL: imageURL["front_default"]! as! String , weight: weight, height: height)
-                            
+                            pokeResult = Pokemon(id: id, name: species["name"] as! String, imageURL: imageURL["front_default"]! as! String , weight: weight, height: height)
                             self.getImage(imageURL: pokeResult.imageURL)
                         }
                     }
                     catch let error {
                         print(error)
+                        DispatchQueue.main.async {
+                            self.pokemonImage.image = UIImage(named: "missing")
+                        }
                     }
                     DispatchQueue.main.async {
-                        print("lola")
+                        self.pokemonNameLabel.text = "Name: \(pokeResult.name)"
+                        self.pokemonIDLabel.text = "ID: " + String(pokeResult.id)
+                        self.pokemonTypeLabel.text = "Type: \(pokeResult.type[0])"
+                        self.pokemonWeightLabel.text = "Weight: " + String(pokeResult.weight)
+                        self.pokemonHeightLabel.text = "Height: " + String(pokeResult.height)
+                        
                     }
                 }
                 
@@ -72,7 +141,6 @@ class ViewController: UIViewController {
                     let image = UIImage(data: data) else { return }
                 DispatchQueue.main.async{
                     self.pokemonImage.image = image
-                    self.pokemonImage.contentMode = .scaleAspectFill
                 }
                 
             }.resume()

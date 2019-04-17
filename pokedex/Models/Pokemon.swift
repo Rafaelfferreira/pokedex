@@ -9,11 +9,21 @@
 import Foundation
 import UIKit
 
-struct Pokemon {
-    var id: Int
-    var name: String
-//    var type: [String]
-    var imageURL: String
-    var weight: Int
-    var height: Int
+class Pokemon {
+    var id: Int = 9999999
+    var name: String = "Missing No"
+    var type: [String] = ["nil"]
+    var imageURL: String = "missing"
+    var weight: Int = -1193091841941
+    var height: Int = 1231093193123
+    
+    init(){}
+    
+    init(id: Int, name: String, imageURL: String, weight: Int, height: Int){
+        self.id = id
+        self.name = name
+        self.imageURL = imageURL
+        self.weight = weight
+        self.height = height
+    }
 }
