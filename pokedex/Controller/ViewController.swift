@@ -96,17 +96,17 @@ class ViewController: UIViewController {
                         self.winkBlueBall()
                     }
                     do {
-                        let res = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                        
-                        if let id = res!["id"] as? Int,
-                            let species = res!["species"] as? [String: Any],
-                            let height = res!["height"] as? Int,
-                            let weight = res!["weight"] as? Int,
-                            let imageURL = res!["sprites"] as? [String: Any],
-                            let type = res!["types"] as? [Any]
+                        if let res = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                            let id = res["id"] as? Int,
+                            let species = res["species"] as? [String: Any],
+                            let height = res["height"] as? Int,
+                            let weight = res["weight"] as? Int,
+                            let imageURL = res["sprites"] as? [String: Any],
+                            let type = self.getTypes(typeArray: ((res["types"] as? [[String:Any]])!))
                         {
-                            pokeResult = Pokemon(id: id, name: species["name"] as! String, imageURL: imageURL["front_default"]! as! String , weight: weight, height: height)
+                            pokeResult = Pokemon(id: id, name: species["name"] as! String,type: type, imageURL: imageURL["front_default"]! as! String , weight: weight, height: height)
                             self.getImage(imageURL: pokeResult.imageURL)
+                            //self.getTypes(typeArray: type)
                         }
                     }
                     catch let error {
@@ -118,7 +118,7 @@ class ViewController: UIViewController {
                     DispatchQueue.main.async {
                         self.pokemonNameLabel.text = "Name: \(pokeResult.name)"
                         self.pokemonIDLabel.text = "ID: " + String(pokeResult.id)
-                        self.pokemonTypeLabel.text = "Type: \(pokeResult.type[0])"
+                        self.pokemonTypeLabel.text = "Type: \(pokeResult.type)"
                         self.pokemonWeightLabel.text = "Weight: " + String(pokeResult.weight)
                         self.pokemonHeightLabel.text = "Height: " + String(pokeResult.height)
                         
@@ -145,6 +145,25 @@ class ViewController: UIViewController {
                 
             }.resume()
         }
+    }
+    
+    private func getTypes(typeArray: [[String:Any]]) -> String?{
+        var arrayToBeFormatted: [String] = []
+        for item in typeArray {
+            if let typeDic = item["type"] as? [String:String]{
+                if let newType = typeDic["name"]{
+                    arrayToBeFormatted.append(newType)
+                }
+//
+            }
+        }
+        
+        //MARK: - Formatting the array into a single line string
+        var typesString : String = arrayToBeFormatted[0]
+        if arrayToBeFormatted.count > 1 {
+            typesString = "\(typesString), \(arrayToBeFormatted[1])"
+        }
+        return typesString
     }
     
     
